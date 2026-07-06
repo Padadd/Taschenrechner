@@ -8,7 +8,7 @@ class Calculator:
         self.root.title("Taschenrechner")
         self.root.geometry("800x550")
         self.root.resizable(False, False)
-        self.root.configure(bg="#f0f0f0")
+        self.root.configure(bg="#fafafa")
         
         # History list
         self.history = []
@@ -29,12 +29,14 @@ class Calculator:
         display = tk.Entry(
             calc_frame,
             textvar=self.display_var,
-            font=("Arial", 28, "bold"),
+            font=("Segoe UI", 28, "bold"),
             justify="right",
-            bd=2,
-            relief=tk.SUNKEN,
+            bd=0,
+            relief=tk.FLAT,
             bg="white",
-            fg="#333"
+            fg="#222",
+            insertbackground="#222",
+            highlightthickness=0
         )
         display.pack(fill=tk.X, pady=(0, 10))
         
@@ -42,17 +44,18 @@ class Calculator:
         self.history_btn = tk.Button(
             calc_frame,
             text="📋 Verlauf",
-            font=("Arial", 10, "bold"),
-            bg="#2196F3",
+            font=("Segoe UI", 10, "bold"),
+            bg="#1976D2",
             fg="white",
             command=self.toggle_history,
-            relief=tk.RAISED,
-            bd=1
+            relief=tk.FLAT,
+            bd=0,
+            highlightthickness=0
         )
         self.history_btn.pack(fill=tk.X, pady=(0, 10))
         
         # Buttons frame
-        buttons_frame = tk.Frame(calc_frame, bg="#f0f0f0")
+        buttons_frame = tk.Frame(calc_frame, bg="#fafafa")
         buttons_frame.pack(fill=tk.BOTH, expand=True)
         
         # Button Layout
@@ -122,32 +125,55 @@ class Calculator:
         
         # Initially hide history
         self.history_frame.pack_forget()
+
+        # Credits label bottom-right
+        credit_label = tk.Label(
+            root,
+            text="Created by Patrick Weidel",
+            font=("Segoe UI", 8),
+            bg="#fafafa",
+            fg="#666"
+        )
+        credit_label.place(relx=1.0, rely=1.0, x=-8, y=-8, anchor="se")
     
     def create_button(self, text, row, col, parent):
         """Create a button with specific styling"""
+        # modern color palette for light theme
         if text == "=":
-            btn_color = "#4CAF50"
+            btn_color = "#43a047"  # green
             fg_color = "white"
-        elif text in ["C", "←", "÷", "×", "−", "+"]:
-            btn_color = "#f44336"
+            active_bg = "#36913a"
+        elif text in ["C", "←"]:
+            btn_color = "#ef5350"  # red-ish
             fg_color = "white"
+            active_bg = "#d64a45"
+        elif text in ["÷", "×", "−", "+"]:
+            btn_color = "#ff8a65"  # orange operators
+            fg_color = "white"
+            active_bg = "#ff7043"
         else:
-            btn_color = "#e8e8e8"
-            fg_color = "#333"
-        
+            btn_color = "#ffffff"  # neutral
+            fg_color = "#222"
+            active_bg = "#f5f5f5"
+
         btn = tk.Button(
             parent,
             text=text,
-            font=("Arial", 20, "bold"),
+            font=("Segoe UI", 16, "bold"),
             bg=btn_color,
             fg=fg_color,
-            activebackground="#ddd",
-            activeforeground="#333",
+            activebackground=active_bg,
+            activeforeground=fg_color,
             command=lambda: self.on_button_click(text),
-            relief=tk.RAISED,
-            bd=1
+            relief=tk.FLAT,
+            bd=0,
+            highlightthickness=0
         )
-        btn.grid(row=row, column=col, sticky="nsew", padx=5, pady=5)
+        btn.grid(row=row, column=col, sticky="nsew", padx=6, pady=6)
+
+        # simple hover effect
+        btn.bind("<Enter>", lambda e, b=btn, c=active_bg: b.configure(bg=c))
+        btn.bind("<Leave>", lambda e, b=btn, c=btn_color: b.configure(bg=c))
     
     def on_button_click(self, char):
         """Handle button clicks"""
