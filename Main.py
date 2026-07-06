@@ -1,3 +1,4 @@
+import random
 import tkinter as tk
 from tkinter import StringVar
 
@@ -126,15 +127,34 @@ class Calculator:
         # Initially hide history
         self.history_frame.pack_forget()
 
-        # Credits label bottom-right
+        # Footer frame for game button and credits
+        footer_frame = tk.Frame(root, bg="#fafafa", height=48)
+        footer_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
+        self.game_button = tk.Button(
+            footer_frame,
+            text="Schere, Stein, Papier",
+            font=("Segoe UI", 10, "bold"),
+            bg="#5c6bc0",
+            fg="white",
+            command=self.open_game_window,
+            relief=tk.FLAT,
+            bd=0,
+            highlightthickness=0,
+            padx=10,
+            pady=6
+        )
+        self.game_button.pack(side=tk.LEFT, padx=12, pady=6)
+        self.game_window = None
+
         credit_label = tk.Label(
-            root,
+            footer_frame,
             text="Created by Patrick Weidel",
             font=("Segoe UI", 8),
             bg="#fafafa",
             fg="#666"
         )
-        credit_label.place(relx=1.0, rely=1.0, x=-8, y=-8, anchor="se")
+        credit_label.pack(side=tk.RIGHT, padx=12)
     
     def create_button(self, text, row, col, parent):
         """Create a button with specific styling"""
@@ -246,6 +266,101 @@ class Calculator:
         """Clear all history"""
         self.history = []
         self.update_history()
+
+    def open_game_window(self):
+        """Open the rock-paper-scissors mini-game window"""
+        if self.game_window is not None and tk.Toplevel.winfo_exists(self.game_window):
+            self.game_window.lift()
+            return
+
+        self.game_window = tk.Toplevel(self.root)
+        self.game_window.title("Schere, Stein, Papier")
+        self.game_window.geometry("320x260")
+        self.game_window.resizable(False, False)
+        self.game_window.transient(self.root)
+        self.game_window.grab_set()
+
+        instruction = tk.Label(
+            self.game_window,
+            text="Wähle Schere, Stein oder Papier:",
+            font=("Segoe UI", 11, "bold"),
+            bg="#fafafa",
+            fg="#222"
+        )
+        instruction.pack(pady=(15, 10), padx=10)
+
+        button_frame = tk.Frame(self.game_window, bg="#fafafa")
+        button_frame.pack(pady=5, padx=10, fill=tk.X)
+
+        for choice in ["Schere", "Stein", "Papier"]:
+            btn = tk.Button(
+                button_frame,
+                text=choice,
+                font=("Segoe UI", 12, "bold"),
+                bg="#ffffff",
+                fg="#222",
+                relief=tk.RAISED,
+                bd=1,
+                command=lambda choice=choice: self.play_rps(choice)
+            )
+            btn.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=5)
+
+        self.result_label = tk.Label(
+            self.game_window,
+            text="",
+            font=("Segoe UI", 11),
+            bg="#fafafa",
+            fg="#333",
+            wraplength=280,
+            justify=tk.LEFT
+        )
+        self.result_label.pack(pady=(15, 5), padx=10)
+
+        close_btn = tk.Button(
+            self.game_window,
+            text="Schließen",
+            font=("Segoe UI", 10),
+            bg="#1976D2",
+            fg="white",
+            command=self.close_game_window,
+            relief=tk.FLAT,
+            bd=0,
+            highlightthickness=0,
+            padx=8,
+            pady=6
+        )
+        close_btn.pack(pady=(10, 10))
+
+        self.game_window.protocol("WM_DELETE_WINDOW", self.close_game_window)
+
+    def close_game_window(self):
+        """Close the game window if open"""
+        if self.game_window is not None:
+            self.game_window.destroy()
+            self.game_window = None
+
+    def play_rps(self, player_choice):
+        """Play one round of rock-paper-scissors"""
+        self.result_label.config(text="Der Gegner denkt nach...")
+        self.root.after(800, lambda: self.show_rps_result(player_choice))
+
+    def show_rps_result(self, player_choice):
+        options = ["Schere", "Stein", "Papier"]
+        cpu_choice = random.choice(options)
+        result = self.get_rps_result(player_choice, cpu_choice)
+        self.result_label.config(
+            text=f"Du: {player_choice}\nGegner: {cpu_choice}\nErgebnis: {result}"
+        )
+
+    @staticmethod
+    def get_rps_result(player, cpu):
+        if player == cpu:
+            return "Unentschieden"
+        if (player == "Schere" and cpu == "Papier") or \
+           (player == "Stein" and cpu == "Schere") or \
+           (player == "Papier" and cpu == "Stein"):
+            return "Du gewinnst!"
+        return "Der Gegner gewinnt."
 
 
 if __name__ == "__main__":
